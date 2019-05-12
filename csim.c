@@ -1,7 +1,4 @@
 #include "cachelab.h"
-
-<<<<<<< HEAD
-#include "cachelab.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,12 +202,6 @@ int main(int argc, char* argv[])
 	free(cache);
 	cache = NULL;
 	printSummary(hit, miss, eviction);
- 
-     
-=======
-int main()
-{
-    printSummary(0, 0, 0);
->>>>>>> ce1cf04b04f4a29661098c995dfb6c42e82b6fdb
     return 0;
+     
 }
