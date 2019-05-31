@@ -56,14 +56,16 @@ void initMainArg(){
 
 void cacheAccess(char type, long unsigned int addr, int size){
     int hitFlag = 0, hitId = -1, emptyLine = -1, minTime = INT_MAX, evicId;
-    int setId;
+    int setIndex = 0;
     int dataTag;
     int i;
     
-    setId = (addr / (blockSize)) % (setCount);
+    setIndex = (addr / (blockSize)) % (setCount);
     dataTag = addr / (blockSize * setCount);
-
-    for(i = 0; i < cacheSize; i++){
+//printf("addr = %ld\n", addr);
+	
+//printf("setIndex = %d\n", setIndex);
+    for(i = setIndex * mainArg.linePerSet; i < (setIndex + 1) * mainArg.linePerSet; i++){
         if(cache[i].tag == dataTag){
             hitFlag = 1;
             hitId = i;
@@ -77,20 +79,23 @@ void cacheAccess(char type, long unsigned int addr, int size){
             evicId = i;
         }
     }
+
     
     if (mainArg.verboseFlag){
-        printf("%c %lx,%x",type,addr,size);
+        printf("%c %lx,%x ",type,addr,size);
     }
     if(hitFlag == 1){
         //situation 1
         cache[hitId].usedTime = timeClock;
-        hit++;   
+        hit++;
+	if(type == 'M'){
+		hit++;
+	}
         if(mainArg.verboseFlag){
-            if(type == 'S' | type == 'L'){
+            if(type == 'S' || type == 'L'){
                 printf("hit\n");
             }
             else{
-                hit++;
                 printf("hit hit\n");
             }
         }
@@ -103,12 +108,14 @@ void cacheAccess(char type, long unsigned int addr, int size){
             cache[emptyLine].tag = dataTag;
             cache[emptyLine].usedTime = timeClock;
             miss++;
+		if(type == 'M'){
+			hit++;
+		}
             if(mainArg.verboseFlag){
-                if(type == 'S' | type == 'L'){
+                if(type == 'S' || type == 'L'){
                     printf("miss\n");
                 }
                 else{
-                    hit++;
                     printf("miss hit\n");
                 }
             }
@@ -120,12 +127,14 @@ void cacheAccess(char type, long unsigned int addr, int size){
             cache[evicId].usedTime = timeClock;
             miss++;
             eviction++;
+		if(type == 'M'){
+			hit++;
+		}
             if(mainArg.verboseFlag){
-                if(type == 'S' | type == 'L'){
+                if(type == 'S' || type == 'L'){
                     printf("miss evition\n");
                 }
                 else{
-                    hit++;
                     printf("miss eviction hit\n");
                 }
             }           
@@ -140,7 +149,7 @@ int main(int argc, char* argv[])
 
     initMainArg();
 
-    opt = getopt(argc, argv, "v:s:E:b:t");
+    opt = getopt(argc, argv, "s:E:b:t:hv");
     while(opt != -1) {
         switch(opt){
             case 'v':
@@ -167,11 +176,13 @@ int main(int argc, char* argv[])
                 printHelp();
                 break;
         }     
-        opt = getopt(argc, argv, "v:s:E:b:t");
+        opt = getopt(argc, argv, "s:E:b:t:hv");
     }
 
-    setCount = pow(2, mainArg.setBit);
-    blockSize = pow(2, mainArg.blockBit);
+    setCount = 1 << (mainArg.setBit);
+    blockSize = 1 << (mainArg.blockBit);
+	//printf("setCount = %d\n", setCount);
+	//printf("blockSize = %d\n", blockSize);
 
     FILE *file = fopen(mainArg.fileName, "r");
 	if (file==NULL){
@@ -185,10 +196,10 @@ int main(int argc, char* argv[])
 		return 3;
 	}
     cacheSize = setCount * mainArg.linePerSet;
-	for (int i= 0;i < cacheSize; i++) {
+	for (i = 0; i < cacheSize; i++) {
 		cache[i].valid = 0;
 		cache[i].usedTime = 0;
-        cache[i].tag = 0;
+        	cache[i].tag = -1;
 	}
 
     while (!feof(file)){
