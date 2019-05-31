@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
 		return 3;
 	}
     cacheSize = setCount * mainArg.linePerSet;
-	for (int i= 0;i < cacheSize; i++) {
+	for (i = 0; i < cacheSize; i++) {
 		cache[i].valid = 0;
 		cache[i].usedTime = 0;
         cache[i].tag = 0;
@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
     while (!feof(file)){
 		int tmp = fscanf(file, " %c %lx,%x", &type, &addr, &size);
 		if (tmp != 3) continue;
-		if (type=='I') continue;
+		if (type =='I') continue;
 		cacheAccess(type,addr,size);
 		timeClock++;
 	}
