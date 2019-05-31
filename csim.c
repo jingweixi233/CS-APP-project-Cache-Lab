@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
     while (!feof(file)){
 		int tmp = fscanf(file, " %c %lx,%x", &type, &addr, &size);
 		if (tmp != 3) continue;
-		if (type=='I') continue;
+		if (type =='I') continue;
 		cacheAccess(type,addr,size);
 		timeClock++;
 	}
