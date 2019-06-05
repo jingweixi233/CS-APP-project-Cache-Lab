@@ -25,15 +25,9 @@ void accessCache(char type, long unsigned int addr, int size);
 
 int main(int argc,char* argv[]){
 	int tmp=0,in=0;
-<<<<<<< HEAD
-<<<<<<< HEAD
-	while ((tmp=getopt(argc,argv,"hv:s:E:b:t"))!=-1){
-=======
+
 	while ((tmp=getopt(argc,argv,"s:E:b:t:hv"))!=-1){
->>>>>>> ce1cf04b04f4a29661098c995dfb6c42e82b6fdb
-=======
-	while ((tmp=getopt(argc,argv,"s:E:b:t:hv"))!=-1){
->>>>>>> ce1cf04b04f4a29661098c995dfb6c42e82b6fdb
+
 		in=1;
 		switch(tmp){
 			case 's':

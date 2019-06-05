@@ -1,3 +1,6 @@
+//517030910116    Jingwei Xi
+//email: jingweixi@sjtu.edu.cn
+//This is the program for matrix transpose function
 /* 
  * trans.c - Matrix transpose B = A^T
  *
@@ -7,6 +10,7 @@
  * A transpose function is evaluated by counting the number of misses
  * on a 1KB direct mapped cache with a block size of 32 bytes.
  */ 
+
 #include <stdio.h>
 #include "cachelab.h"
 
@@ -24,11 +28,12 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
     int i, j, m, n;
     int a1, a2, a3, a4, a5, a6, a7, a8;
-    if(N == 32 && M == 32){
+    if(N == 32 && M == 32){   // Matrix 32x32
         for(i = 0; i < 4; i++){
             for(j = 0; j < 4; j++){
                 for(m = 0; m < 8; m++){
                     for(n = 0; n < 8; n++){
+                        //For A[k][k], handle it later
                         if(i * 8 + m == j * 8 + n){
                             a1 = i * 8 + m;
                             a2 = A[i * 8 + m][j * 8 + n];
@@ -37,7 +42,8 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                         B[j * 8 + n][i * 8 + m] = A[i * 8 + m][j * 8 + n];
                     }
                     if(i == j){
-                        B[a1][a1] = a2;
+                        //Handle the A[k][k]
+                        B[a1][a1] = a2;  
                     }
                 }
             }
@@ -45,14 +51,20 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
         return;
     }
 
-    if(N == 64 && M == 64){
+    if(N == 64 && M == 64){  //Matrix 64x64
+        
         for(i = 0; i < 8; i++){
             for(j = 0; j < 8; j++){
+                //Transpose A,B to AT, BT
                 for(m = 0; m < 4; m++){
-                    a1 = A[i * 8 + m][j * 8]; a2 = A[j * 8 + m][j * 8 + 1];
-                    a3 = A[j * 8 + m][j * 8 + 2]; a4 = A[j * 8 + m][j * 8 + 3];
-                    a5 = A[j * 8 + m][j * 8 + 4]; a6 = A[j * 8 + m][j * 8 + 5];
-                    a7 = A[j * 8 + m][j * 8 + 6]; a8 = A[j * 8 + m][j * 8 + 7];
+                    a1 = A[i * 8 + m][j * 8]; 
+                    a2 = A[j * 8 + m][j * 8 + 1];
+                    a3 = A[j * 8 + m][j * 8 + 2]; 
+                    a4 = A[j * 8 + m][j * 8 + 3];
+                    a5 = A[j * 8 + m][j * 8 + 4]; 
+                    a6 = A[j * 8 + m][j * 8 + 5];
+                    a7 = A[j * 8 + m][j * 8 + 6]; 
+                    a8 = A[j * 8 + m][j * 8 + 7];
 
                     B[j * 8][i * 8 + m] = a1;
                     B[j * 8][i * 8 + m + 4] = a5;
@@ -64,13 +76,12 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                     B[j * 8 + 3][i * 8 + m + 4] = a8;
 
                 }
-
+                //Transfer BT and CT to right place 
                 for(m = 0; m < 4; m++){
                     a1 = B[j * 8 + m][i * 8 + 4];
                     a2 = B[j * 8 + m][i * 8 + 5];
                     a3 = B[j * 8 + m][i * 8 + 6];
                     a4 = B[j * 8 + m][i * 8 + 7];
-
                     a5 = A[i * 8 + 4][j * 8 + m];
                     a6 = A[i * 8 + 5][j * 8 + m];
                     a7 = A[i * 8 + 6][j * 8 + m];
@@ -85,7 +96,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                     B[j * 8 + m + 4][i * 8 + 2] = a3;
                     B[j * 8 + m + 4][i * 8 + 3] = a4;
                 }
-
+                //Transpose D to DT
                 for(m = 0; m < 4; m++){
                     a1 = A[i * 8 + 4 + m][j * 8 + 4];
                     a2 = A[i * 8 + 4 + m][j * 8 + 5];
@@ -101,7 +112,7 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
         }
         return;
     }
-
+    //Matrix 61x67, use unit 16x16
     for(i = 0; i < 16; i++){
         for(j = 0; j < 16; j++){
             for(m = 0; m < 16 && m < N; m++){
