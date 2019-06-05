@@ -115,9 +115,9 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
     //Matrix 61x67, use unit 16x16
     for(i = 0; i < 16; i++){
         for(j = 0; j < 16; j++){
-            for(m = 0; m < 16 && m < N; m++){
-                for(n = 0; n < 16 && n < M; n++){
-                    B[j * 8 + n][i * 8 + m] = A[i * 8 + m][j * 8 + n];
+            for(m = 0; m < 16 && i * 16 + m < N; m++){
+                for(n = 0; n < 16 && j * 16 + n < M; n++){
+                    B[j * 16 + n][i * 16 + m] = A[i * 16 + m][j * 16 + n];
                 }
             }
         }
