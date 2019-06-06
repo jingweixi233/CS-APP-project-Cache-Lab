@@ -15,6 +15,8 @@
 
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
 
 
 % 定义可能使用到的颜色
@@ -67,32 +69,29 @@
 
 \section{Introduction}
 
-[In this section you should briefly introduce the task in your own words, and what you’ve done in this project. A simple copy from project1.pdf is not permitted.] \\
 
-In this lab, I write two parts for programs. In the first part, I write a program to simulate the behavior of a cache memory. In the program, I use array as the data structure for cache. In the second part, I write a program to optimize cache performance for matrix transpose function which use amazing idea. 
+In this lab, I write two programs for two parts. In the first part, I write a program to simulate the hit, miss and evict behaviors of an LRU cache memory. In the program, I use array to be the data structure for cache. In the second part, I write a program to optimize cache performance for matrix transpose function.
 
 \section{Experiments}
-
-[This is the main part of your report. It includes three parts and in each part, you need to write concretely, logically but not in full details.]
-
-
-
 
 \subsection{Part A}
 
 \subsubsection{Analysis}
 
-[In this part, you should give an overall analysis for the task, like difficult point, core technique and so on.]
 
-The task for part A is to simulates the behavior of a cache with arbitrary size and associativity on a valgrind trace file. To complete this task, I use array to simulate the cache.
+The task for part A is to simulate the behavior of a cache with arbitrary size and associativity on a valgrind trace file. To complete this task, I use array to simulate the cache.
 
-In each element of array, I use three variables. First is valid bit, which indicate whether block is in cache. Second is tag, which is used to find the tag. The third one is the usedTime, which record the time that block last be used. 
+In each element of array, I use three variables. First is valid bit, which indicate whether the data of block in cache is valid. The second variable is tag, which is used to check whether block is in the cache. The third one is the timeRef, which stores the time that the block recently be accessed. 
 
-I use the LRU (least-recently used) replacement policy when choosing which cache line to evict. If there is empty line in the set, I will put the block into empty line. If not, I will evict the line with least usedTime number, which indicate it has not been used for a long time.
+I use the LRU (least-recently used) replacement policy when choosing which cache line to evict. For each data access, there will be three situation: 
+
+a. The data block is in the cache. 
+
+b. The data block is not in the cache but there is empty line in the set. It will put the block into empty line.
+
+ c. The data block is not in the cache and there is not empty line in the set. It will evict the line with minimum timeRef number, which indicate it has not been accessed for a long time.
 
 \subsubsection{Code}
-
-[In this part, you should place your code and make it readable in Microsoft Word, please. Writing necessary comments for codes is a good habit.]
 
 \begin{lstlisting}[title=csim.c, frame=shadowbox]
 //517030910116    Jingwei Xi
@@ -172,7 +171,7 @@ void cacheAccess(char type, long unsigned int addr, int size){
         if(cache[i].valid == 0 && emptyLine == -1){ 
             emptyLine = i;
         }
-        //Find the block line with the least timeRef number
+        //Find the block line with the minimum timeRef number
         if(cache[i].timeRef < minTime){  
             minTime = cache[i].timeRef;
             evicId = i;
@@ -318,43 +317,42 @@ int main(int argc, char* argv[])
 
 \subsubsection{Evaluation}
 
-[In this part, you should place the figures of experiments for your codes, prove the correctness and validate the performance with your own words for each figure’s explanation.]
+Here is the result. \\
 
-
-
+\includegraphics[scale=0.43]{1.png}
 
 \subsection{Part B}
 
 \subsubsection{Analysis}
 
-[In this part, you should give an overall analysis for the task, like difficult point, core technique and so on.]
-
 The task of part B is to write a transpose function that causes as few cache misses as possible. 
 
-For 32*32 matrix, each element in matrix with int type use 4 bytes. As our block size 32 bytes, we have 
+For 32x32 matrix, each element in matrix with int type use 4 bytes. As our block size is 32 bytes, we have 
 8 elements in one block. For each line in matrix, it can be placed in 4 blocks and the cache will save 8 lines of matrix at one time.
 
-The distribution of matrix is showed in graph1 below
-
-So we deal with 8*8 matrix each time because all matrix element are in the cache which will cause less miss. 
+The cache block distribution of matrix elements is showed in the picture.
 
 \includegraphics[scale=0.35]{2.png}
 
-And notice for elements like A[i][i], the lines we’ll use in matrix A and matrix B are mapped to the same cache line, which will generate unnecessary conflict misses. So we will use a temporary variant to avoid these misses.
+From the picture, we can see that we can deal with 8x8 matrix each time with few conflict misses because all matrix element are in the cache.
 
-For 64*64 matrix, the statement is different from before. For each line in matrix, it can be placed in 8 blocks and the cache will save 4 lines of matrix at one time. So only 4*4 matrix can be placed in cache at one time. If we transpose 4*4 matrix at on time, it can have little miss but it will waste a lot of space in cache line. The optimization will use 8*8 matrix and fully use of cache line and have little miss.
+And for elements like A[i][i], the lines we’ll use in matrix A and matrix B are mapped to the same cache line, which will generate unnecessary conflict misses. So we will use a temporary variant to store the value temporarily and transfer to matrix B later.
+
+For 64x64 matrix, the situation is different from 32x32 before. 
 
 \includegraphics[scale=0.35]{3.png}
+
+From the picture we can see that each line in matrix can be placed in 8 blocks and the cache will save 4 lines of matrix at one time. So only 4*4 matrix can be placed in cache at one time. If we transpose 4*4 matrix at on time, it can have little miss but it will waste a lot of space in cache line. The algorithm I  developed will use 8*8 matrix which can fully use of cache line and have a good performance.
 
 Firstly, there is matrix A and matrix B, and both of them are 8x8. I divide A and B into four 4x4 matrices: A, B, C, D. At this time, the matrix B is empty.
 
 \includegraphics[scale=0.35]{4.png}
 
-Secondly, I put AT andBT into matrix B. Because four lines of matrix can be saved in cache at the same time, there will little miss in transposition. 
+Secondly, I put AT andBT into matrix B. Because four lines of matrix can be saved in cache at the same time, we can handle  A and B at the same time with little misses.
 
 \includegraphics[scale=0.35]{5.png}
 
-Thirdly, I put BT into right place by row. And then I put CT to right place by column. 
+Thirdly, I put BT into right place by row. And then I put CT to right place by column. The transfer algorithm is showed in the picture.
 
 \includegraphics[scale=0.35]{6.png}
 
@@ -364,10 +362,9 @@ At last, I put DT to matrix B.
 
 Even though I can not modify matrix A, I can matrix B at any time. When I transpose B and C in matrix A, I use empty space in B to temporarily save BT, which will reduce many conflict misses.
 
-For 61x67 matrix, I can not calculate the best unit size for matrix transposition. So I just test different unit size to handle it and I find that use 16x16 matrix as a unit will meet the requirement.
+For 61x67 matrix, I can not calculate the best unit size for matrix transposition. So I just test different unit sizes to handle it and I find that use 16x16 size matrix as the unit will meet the requirement.
 \subsubsection{Code}
 
-[In this part, you should place your code and make it readable in Latex, please. Writing necessary comments for codes is a good habit.]
 \begin{lstlisting}[title=trans.c, frame=shadowbox]
 //517030910116    Jingwei Xi
 //email: jingweixi@sjtu.edu.cn
@@ -558,26 +555,29 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N])
 \end{lstlisting}
 \subsubsection{Evaluation}
 
-[In this part, you should place the figures of experiments for your codes, prove the correctness and validate the performance with your own words for each figure’s explanation.]
+Here are the results and correctness of my program.\\
+
+
+\includegraphics[scale=0.43]{8.png}
+
 
 \section{Conclusion}
 
 \subsection{Problems}
 
-[In this part you can list the obstacles you met during the project, and better add how you overcome them if you have made it.]
+In part A, I met the problem that I didn't not know how to get the arguments of command line with uncertain number of arguments. With the help of partner and some technology blogs on the internet, I learned how to use the function getopt() to get the argument value.
 
-In part A, I meet the problem that I do not know how to get the arguments of command line with uncertain number of arguments. With the help of partner and some technology blogs on the internet, I learned how to use the function getopt() to get the argument value.
-
-The most difficult obstacle I met in this project is in part B. For transposition of matrix 64x64, I think of many ideas to handle it but they all over the 1300. I think a lot of ideas to optimize on handle in a unit matrix of 4x4, but I didn't think about the temporarily use the empty space of matrix B. After learning some best idea on the internet, I solve this problem. 
+The most difficult obstacle I met in this project is in part B. For transposition of matrix 64x64, the optimization of matrix 32x32 and 61x67 are both not work well. I think a lot of ideas to optimize on handling in a unit matrix of 4x4, but they all did not meet requirements. After learning some best idea on the internet and discussing with partners , I solve this problem by temporarily using the empty space in matrix B.
 
 \subsection{Achievements}
 
-[In this part you can list the strength of your project solution, like the performance improvement, coding readability, partner cooperation and so on. You can also write what you have learned if you like.]
-
 In part A, my program takes the same command line arguments and produces the identical output as the reference simulator. In part B, the algorithm I used has a good performance that misses of cache are all meet requirements.
 
-In this project, I discuss the algorithm in part B with my partner several times. During the discuss, we all think about how to improve the performance of our program and talk about ideas with others. I make a good progress in during the optimization of our program.
+In this project, I discuss the algorithm in part B with my partner several times. During the discuss, we all think about how to improve  performance of our program and talk about ideas with others. I make a good progress during the time as we optimize our algorithm.
 
+At the same time, I learned a lot of knowledge of cache and make a deep comprehension of cache LRU algorithm. In addition, with the practice in part B, l learned the importance of studying computer architecture. With the knowledge of computer architecture, we can program in good structure to make best use of hardware and get the best performance.
+
+In conclusion, l learned a lot about cache in this lab.
 
 
 
