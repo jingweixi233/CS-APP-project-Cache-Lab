@@ -58,13 +58,13 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                 //Transpose A,B to AT, BT
                 for(m = 0; m < 4; m++){
                     a1 = A[i * 8 + m][j * 8]; 
-                    a2 = A[j * 8 + m][j * 8 + 1];
-                    a3 = A[j * 8 + m][j * 8 + 2]; 
-                    a4 = A[j * 8 + m][j * 8 + 3];
-                    a5 = A[j * 8 + m][j * 8 + 4]; 
-                    a6 = A[j * 8 + m][j * 8 + 5];
-                    a7 = A[j * 8 + m][j * 8 + 6]; 
-                    a8 = A[j * 8 + m][j * 8 + 7];
+                    a2 = A[i * 8 + m][j * 8 + 1];
+                    a3 = A[i * 8 + m][j * 8 + 2]; 
+                    a4 = A[i * 8 + m][j * 8 + 3];
+                    a5 = A[i * 8 + m][j * 8 + 4]; 
+                    a6 = A[i * 8 + m][j * 8 + 5];
+                    a7 = A[i * 8 + m][j * 8 + 6]; 
+                    a8 = A[i * 8 + m][j * 8 + 7];
 
                     B[j * 8][i * 8 + m] = a1;
                     B[j * 8][i * 8 + m + 4] = a5;
